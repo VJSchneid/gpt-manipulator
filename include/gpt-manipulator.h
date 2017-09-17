@@ -110,7 +110,7 @@ void gpt_free_header(struct GPT_Header *header);
  * @param  partition_no Partition number
  * @return              return NULL on error
  */
-struct GPT_Partition *gpt_get_entry(struct GPT_Handle *handle,
+struct GPT_Entry *gpt_get_entry(struct GPT_Handle *handle,
                                   struct GPT_Header *header, int partition_no);
 
 /**
@@ -118,10 +118,10 @@ struct GPT_Partition *gpt_get_entry(struct GPT_Handle *handle,
  *    Verification of GPT Header is recommended
  * @param  handle GPT Handle to read from
  * @param  header GPT Header
- * @return        return NULL on error on success GPT_Partition array
+ * @return        return NULL on error on success GPT_Entry array
  *                       with all partitions
  */
-struct GPT_Partition *gpt_get_all_entries(struct GPT_Handle *handle,
+struct GPT_Entry *gpt_get_all_entries(struct GPT_Handle *handle,
                                             struct GPT_Header *header);
 
 /**

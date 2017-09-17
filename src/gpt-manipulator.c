@@ -83,14 +83,14 @@ struct GPT_Header *gpt_read_header(struct GPT_Handle *handle) {
   }
 
   struct GPT_Header_Raw data;
-  if (fread(&data, sizeof(data), 1, (FILE *)handle->file) != 1) {
+  if (fread(&data, sizeof(struct GPT_Header_Raw), 1, (FILE *)handle->file) != 1) {
     return NULL;
   }
 
-  struct GPT_Header *header = (struct GPT_Header *)malloc(sizeof(header));
+  struct GPT_Header *header = (struct GPT_Header *)malloc(sizeof(struct GPT_Header));
 
   memcpy(header->signature, data.signature, sizeof(data.signature));
-  memcpy(header->uuid, data.guid, sizeof(data.guid));
+  memcpy(header->guid, data.guid, sizeof(data.guid));
   header->revision = data.revision;
   header->header_size = data.header_size;
   header->crc32_header = data.crc32_header;
@@ -110,21 +110,27 @@ void gpt_free_header(struct GPT_Header *header) {
   free(header);
 }
 
-struct GPT_Partition *gpt_get_entry(struct GPT_Handle *handle,
+struct GPT_Entry *gpt_get_entry(struct GPT_Handle *handle,
                   struct GPT_Header *header, int partition_no) {
-  if (fseek((FILE *)handle->file,
-              handle->offset + lba_size + partition_no * header->entry_size),
-              SEEK_SET) != 0) {
+  if (fseek((FILE *)handle->file, handle->offset + handle->lba_size +
+              partition_no * header->entry_size, SEEK_SET) != 0) {
     return NULL;
   }
 
   struct GPT_Entry_Raw data;
-  if (header->entry_size < sizeof(data))
-  if (fread(&data, sizeof(data), 1, (FILE *)handle->file) != 1) {
+  int readLength;
+  if (header->entry_size < sizeof(struct GPT_Entry_Raw)) {
+    memset(&data, 0, sizeof(struct GPT_Entry_Raw));
+    readLength = header->entry_size;
+  } else {
+    readLength = sizeof(struct GPT_Entry_Raw);
+  }
+
+  if (fread(&data, readLength, 1, (FILE *)handle->file) != 1) {
     return NULL;
   }
 
-  struct GPT_Entry *entry = (struct GPT_Entry *)malloc(sizeof(GPT_Entry));
+  struct GPT_Entry *entry = (struct GPT_Entry *)malloc(sizeof(struct GPT_Entry));
 
   memcpy(entry->type_guid, data.type_guid, sizeof(data.type_guid));
   memcpy(entry->guid, data.guid, sizeof(data.guid));
@@ -137,29 +143,45 @@ struct GPT_Partition *gpt_get_entry(struct GPT_Handle *handle,
 }
 
 // TODO verify header
-struct gpt_get_all_entries(struct GPT_Handle *handle, struct GPT_Header *header) {
-  if (fseek((FILE *)file, header->position_entries *
+struct GPT_Entry *gpt_get_all_entries(struct GPT_Handle *handle,
+                        struct GPT_Header *header) {
+  if (fseek((FILE *)handle->file, header->position_entries *
               handle->lba_size, SEEK_SET) != 0) {
     return NULL;
   }
 
-  uint8_t *data = (uint8_t *)malloc(header->entry_size * header->entries);
-  if (data == NULL) {
+  struct GPT_Entry *entries = (struct GPT_Entry *)malloc(
+                        sizeof(struct GPT_Entry) * header->entries);
+  if (entries == NULL) {
     return NULL;
   }
 
-  if (fread(entry, header->entry_size, header->entries, (FILE *)handle->file) !=
-                          header->entries) {
-    free(data);
-    return NULL;
-  }
-
-  int padding = header->entry_size - sizeof(GPT_Entry_Raw);
-  GPT_Entry *entries = (GPT_Entry *)malloc(sizeof(GPT_Entry) * header->entries);
-  if (padding >= 0) {
-    // TODO do programming
+  struct GPT_Entry_Raw data;
+  int readLength, padding = header->entry_size - sizeof(struct GPT_Entry_Raw);
+  if (padding < 0) {
+    memset(&data, 0, sizeof(struct GPT_Entry_Raw));
+    readLength = header->entry_size;
+    padding = 0;
   } else {
-
+    readLength = sizeof(struct GPT_Entry_Raw);
   }
 
+  for (int x = 0; x > header->entries; x++) {
+    if (fread(&data, readLength, 1, (FILE *)handle->file) != 1) {
+      free(entries);
+      return NULL;
+    }
+
+    memcpy(entries[x].type_guid, data.type_guid, sizeof(entries->type_guid));
+    memcpy(entries[x].guid, data.guid, sizeof(entries->guid));
+    memcpy(entries[x].name, data.name, sizeof(entries->name));
+    entries[x].first_lba = data.first_lba;
+    entries[x].last_lba = data.last_lba;
+    entries[x].attributes = data.attributes;
+
+    if (padding != 0 && fseek((FILE *)handle->file, padding, SEEK_CUR) != 0) {
+      free(entries);
+      return NULL;
+    }
+  }
 }
