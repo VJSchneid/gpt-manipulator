@@ -20,43 +20,6 @@
  * SOFTWARE.
  */
 
-#include <gpt-manipulator.h>
+#include <stdint.h>
 
-struct GPT_Header_Raw {
-  uint8_t signature[8];
-  uint32_t revision;
-  uint32_t header_size;
-  uint32_t crc32_header;
-  uint32_t null;
-  uint64_t position_primary;
-  uint64_t position_secondary;
-  uint64_t first_partition_lba;
-  uint64_t last_partition_lba;
-  uint8_t guid[8];
-  uint64_t position_entries;
-  uint32_t entries;
-  uint32_t entry_size;
-  uint32_t crc32_entries;
-} __attribute__((packed));
-
-struct GPT_Entry_Raw {
-  uint8_t type_guid[16];
-  uint8_t guid[16];
-  uint64_t first_lba;
-  uint64_t last_lba;
-  uint64_t attributes;
-  uint8_t name[72];
-} __attribute__((packed));
-
-void gpt_copy_raw_header(struct GPT_Header *dest, struct GPT_Header_Raw *src);
-
-void gpt_copy_header(struct GPT_Header_Raw *dest, struct GPT_Header *src);
-
-void gpt_copy_raw_entry(struct GPT_Entry *dest, struct GPT_Entry_Raw *src);
-
-void gpt_copy_entry(struct GPT_Entry_Raw *dest, struct GPT_Entry *src);
-
-bool gpt_write_padding(struct GPT_Handle *handle, int padding);
-
-bool gpt_write_pad(struct GPT_Handle *handle, void *pad, int pad_size,
-                        int padding);
+uint32_t crc32_generate(const void *data, unsigned long length);

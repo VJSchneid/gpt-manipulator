@@ -21,6 +21,7 @@
  */
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #define GPT_DEFAULT_SIGNATURE "EFI_PART"
 #define GPT_DEFAULT_OFFSET 512
@@ -58,7 +59,9 @@ struct GPT_Entry {
 
 enum GPT_Error {
   GPT_SUCCESS,
-  GPT_CRC32_INCORRECT
+  GPT_CRC32_INCORRECT,
+  GPT_SEEK_ERROR,
+  GPT_WRITE_ERROR
 };
 
 /**
@@ -69,7 +72,7 @@ enum GPT_Error {
  * @return          returns NULL on error
  */
 struct GPT_Handle *gpt_create_handle(const char *path, unsigned int lba_size,
-                                      uint64_t offset);
+                                      uint64_t offset, bool read_only);
 
 /**
  * Create a GPT Handle, but validate table by signature
@@ -82,7 +85,8 @@ struct GPT_Handle *gpt_create_handle(const char *path, unsigned int lba_size,
 struct GPT_Handle *gpt_create_handle_with_signature(const char *path,
                                                     unsigned int lba_size,
                                                     const char *signature,
-                                                    uint64_t offset);
+                                                    uint64_t offset,
+                                                    bool read_only);
 
 /**
  * Free resources needed by handle
@@ -126,9 +130,9 @@ struct GPT_Entry *gpt_get_all_entries(struct GPT_Handle *handle,
 
 /**
  * Free resources needed by partition
- * @param entry partition to free
+ * @param entries entry or entries to free
  */
-void gpt_free_partition(struct GPT_Entry *entry);
+void gpt_free_entries(struct GPT_Entry *entries);
 
 /**
  * Recalculate GPT crc32 checksum
@@ -141,7 +145,7 @@ void gpt_refresh_crc32(struct GPT_Header *header);
  * @param header     GPT header
  * @param entries All GPT partitions
  */
-void gpt_refresh_entries(struct GPT_Header *header, struct GPT_Entry *entrie,
+void gpt_refresh_entries(struct GPT_Header *header, struct GPT_Entry *entries,
                         int partition_count);
 /**
  * Write GPT Header to device or image. The secondary GPT Header
@@ -160,6 +164,7 @@ enum GPT_Error gpt_write_header(struct GPT_Handle *handle,
  * @return           returns error code
  */
 enum GPT_Error gpt_write_entries(struct GPT_Handle *handle,
+                                    struct GPT_Header *header,
                                     struct GPT_Entry *entries);
 
 /**

@@ -8,6 +8,8 @@ include_directories(
 set(SOURCE_FILES
   src/gpt-manipulator.h
   src/gpt-manipulator.c
+  src/crc32.h
+  src/crc32.c
 )
 
 add_library(gpt-manipulator ${SOURCE_FILES})
