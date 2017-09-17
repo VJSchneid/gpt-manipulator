@@ -1,7 +1,7 @@
-#GPT-Manipulator
+# GPT-Manipulator
 Library to verify or modify GPT Tables, written in C.
 
-##Install instructions
+## Install instructions
 ```bash
 # Clone GIT repository from Github
 git clone https://github.com/vjschneid/gpt-manipulator.git
