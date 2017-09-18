@@ -24,7 +24,8 @@
 #include <stdbool.h>
 
 #define GPT_DEFAULT_SIGNATURE "EFI_PART"
-#define GPT_DEFAULT_OFFSET 512
+#define GPT_DEFAULT_LBA_SIZE 512
+#define GPT_DEFAULT_OFFSET 1
 
 struct GPT_Handle {
   void *file;
@@ -41,7 +42,7 @@ struct GPT_Header {
   uint64_t position_secondary;
   uint64_t first_partition_lba;
   uint64_t last_partition_lba;
-  uint8_t guid[8];
+  uint8_t guid[16];
   uint64_t position_entries;
   uint32_t entries;
   uint32_t entry_size;

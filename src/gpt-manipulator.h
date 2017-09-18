@@ -32,7 +32,7 @@ struct GPT_Header_Raw {
   uint64_t position_secondary;
   uint64_t first_partition_lba;
   uint64_t last_partition_lba;
-  uint8_t guid[8];
+  uint8_t guid[16];
   uint64_t position_entries;
   uint32_t entries;
   uint32_t entry_size;

@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.0)
 project(gpt-manipulator C)
 
+add_subdirectory(test)
+
 include_directories(
   include
 )
