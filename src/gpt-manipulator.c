@@ -353,3 +353,72 @@ enum GPT_Error gpt_write_entries(struct GPT_Handle *handle,
 
   return GPT_SUCCESS;
 }
+
+
+enum GPT_Error gpt_write_secondary_header(struct GPT_Handle *handle,
+                                            struct GPT_Header *header) {
+  if (fseek((FILE *)handle->file,
+              handle->lba_size * header->position_secondary, SEEK_SET) != 0) {
+    return GPT_SEEK_ERROR;
+  }
+
+  struct GPT_Header_Raw data;
+  gpt_copy_header(&data, header);
+
+  if (fwrite(&data, sizeof(struct GPT_Header_Raw), 1, (FILE *)handle->file) != 1) {
+    return GPT_WRITE_ERROR;
+  }
+
+  int padding = header->header_size - sizeof(struct GPT_Header_Raw);
+  if (padding > 0 && !gpt_write_padding(handle, padding)) {
+    return GPT_WRITE_ERROR;
+  }
+
+  if (fflush((FILE *)handle->file) != 0) {
+    return GPT_WRITE_ERROR;
+  }
+
+  return GPT_SUCCESS;
+}
+
+enum GPT_Error gpt_verify_header(struct GPT_Handle *handle,
+                                  struct GPT_Header *header) {
+  uint32_t crc32 = header->crc32_header;
+
+  gpt_refresh_crc32(header);
+  if (header->crc32_header != crc32) {
+    header->crc32_header = crc32;
+    return GPT_CRC32_MISMATCH;
+  }
+
+  if (header->header_size < 92 || header->header_size < handle->lba_size) {
+    return GPT_BAD_HEADER_SIZE;
+  }
+
+  if (header->position_primary < header->first_partition_lba) {
+    return GPT_BAD_PRIMARY_POSITION;
+  }
+
+  if (header->position_primary != handle->offset / handle->lba_size) {
+    return GPT_BAD_PRIMARY_POSITION;
+  }
+
+  if (header->position_entries < header->position_primary) {
+    return GPT_BAD_ENTRIES_POSITION;
+  }
+
+  uint64_t last_entry_lba = header->position_entries +
+                                    (header->entries * header->entry_size +
+                                    handle->lba_size - 1) / handle->lba_size;
+  if (header->first_partition_lba <= last_entry_lba) {
+    return GPT_BAD_PARTITION_POSITION;
+  }
+
+  if (header->first_partition_lba <= header->last_partition_lba) {
+    return GPT_BAD_PARTITION_POSITION;
+  }
+
+  if (header->position_secondary <= header->position_primary) {
+    return GPT_BAD_SECONDARY_POSITION;
+  }
+}

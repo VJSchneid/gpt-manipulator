@@ -60,9 +60,15 @@ struct GPT_Entry {
 
 enum GPT_Error {
   GPT_SUCCESS,
-  GPT_CRC32_INCORRECT,
+  GPT_CRC32_MISMATCH,
   GPT_SEEK_ERROR,
-  GPT_WRITE_ERROR
+  GPT_WRITE_ERROR,
+  GPT_BAD_PRIMARY_POSITION,
+  GPT_BAD_PARTITION_POSITION,
+  GPT_BAD_HEADER_SIZE,
+  GPT_BAD_SECONDARY_POSITION,
+  GPT_BAD_ENTRIES_POSITION,
+  
 };
 
 /**
@@ -182,7 +188,8 @@ enum GPT_Error gpt_write_secondary_header(struct GPT_Handle *handle,
  * @param  header    GPT Header to verify
  * @return           returns error code
  */
-enum GPT_Error gpt_verify_header(struct GPT_Header *header);
+enum GPT_Error gpt_verify_header(struct GPT_Handle *handle,
+                                  struct GPT_Header *header);
 
 /**
  * Verify GPT Entries
