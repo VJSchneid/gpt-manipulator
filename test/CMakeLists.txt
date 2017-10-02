@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0)
-project(gpt-manipulator-test C)
+project(gpt-manipulator-test)
 
 include_directories(
   ../include
@@ -14,7 +14,7 @@ link_libraries(
 )
 
 set(SOURCE_FILES
-  main.c
+  main.cc
 )
 
 add_executable(gpt-manipulator-test ${SOURCE_FILES})

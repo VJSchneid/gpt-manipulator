@@ -20,6 +20,10 @@
  * SOFTWARE.
  */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -68,7 +72,7 @@ enum GPT_Error {
   GPT_BAD_HEADER_SIZE,
   GPT_BAD_SECONDARY_POSITION,
   GPT_BAD_ENTRIES_POSITION,
-  
+
 };
 
 /**
@@ -209,3 +213,7 @@ enum GPT_Error gpt_verify_entries(struct GPT_Handle *handle,
  */
 enum GPT_Error gpt_verify_scondary_header(struct GPT_Handle *handle,
                                               struct GPT_Header *header);
+
+#ifdef __cplusplus
+}
+#endif
