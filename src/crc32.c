@@ -28,10 +28,6 @@
  }
 
  void crc32(const void *data, unsigned long n_bytes, uint32_t* crc) {
-   static uint32_t table[0x100];
-   if(!*table)
-     for(unsigned long i = 0; i < 0x100; ++i)
-       table[i] = crc32_for_byte(i);
    for(unsigned long i = 0; i < n_bytes; ++i)
-     *crc = table[(uint8_t)*crc ^ ((uint8_t*)data)[i]] ^ *crc >> 8;
+     *crc = crc32_for_byte((uint8_t)*crc ^ ((uint8_t*)data)[i]) ^ *crc >> 8;
  }
