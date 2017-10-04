@@ -1,6 +1,8 @@
 #include <gpt-manipulator.h>
 #include <iostream>
 #include <bitset>
+#include <cstring>
+#include <error.h>
 
 struct UUID {
   uint32_t time_low;
@@ -83,8 +85,37 @@ int main() {
     std::cout << "Attributes: 0b" << std::bitset<sizeof(GPT_Entry::attributes) * 8>(entries[x].attributes) << std::endl;
     std::cout << "First LBA: " << entries[x].first_lba << std::endl;
     std::cout << "Last LBA: " << entries[x].last_lba << std::endl;
+    std::cout << "Name: ";
+    for (int y = 0; y < 36; y++) {
+      std::cout << static_cast<char>(entries[x].name[y]);
+    }
+    std::cout << std::endl;
   }
 
+  /* swap two partitions */
+  struct GPT_Entry cache;
+  std::memcpy(&cache, entries + 1, sizeof(struct GPT_Entry));
+
+  std::memcpy(entries + 1, entries + 2, sizeof(struct GPT_Entry));
+  std::memcpy(entries + 2, &cache, sizeof(struct GPT_Entry));
+
+  gpt_refresh_entries(header, entries);
+  gpt_refresh_crc32(header);
+
+  std::cout << std::endl;
+  GPT_Error error;
+  error = gpt_write_secondary_header(handle, header);
+  if (error != GPT_SUCCESS) {
+    std::cout << "failed to write secondary header" << " code: " << error << std::endl;
+  }
+  error = gpt_write_entries(handle, header, entries);
+  if (error != GPT_SUCCESS) {
+      std::cout << "failed to write entries " << strerror(errno) << std::endl;
+  }
+  error = gpt_write_header(handle, header);
+  if (error != GPT_SUCCESS) {
+    std::cout << "failed to write primary header" << " code: " << error << std::endl;
+  }
 
   gpt_free_entries(entries);
   gpt_free_header(header);

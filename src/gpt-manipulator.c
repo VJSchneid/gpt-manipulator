@@ -122,7 +122,7 @@ struct GPT_Handle *gpt_create_handle(const char *path, unsigned int lba_size,
   if (read_only) {
     handle->file = fopen(path, "r");
   } else {
-    handle->file = fopen(path, "rw");
+    handle->file = fopen(path, "r+w");
   }
   if (handle->file == NULL) {
     free((void *)handle);
@@ -214,7 +214,6 @@ struct GPT_Entry *gpt_get_entry(struct GPT_Handle *handle,
   return entry;
 }
 
-// TODO verify header
 struct GPT_Entry *gpt_get_all_entries(struct GPT_Handle *handle,
                         struct GPT_Header *header) {
   if (fseek((FILE *)handle->file, header->position_entries *

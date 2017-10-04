@@ -59,7 +59,7 @@ struct GPT_Entry {
     uint64_t first_lba;
     uint64_t last_lba;
     uint64_t attributes;
-    uint8_t name[72];
+    uint16_t name[36];
 };
 
 enum GPT_Error {
@@ -89,7 +89,7 @@ struct GPT_Handle *gpt_create_handle(const char *path, unsigned int lba_size,
  * Create a GPT Handle, but validate table by signature
  * @param  path      GPT Handle
  * @param  lba_size  Size of one LBA Sector
- * @param  signature Non standard GPT Signature7
+ * @param  signature Non standard GPT Signature
  * @param  offset   Offset (LBA) for GPT table
  * @return           return NULL on error
  */

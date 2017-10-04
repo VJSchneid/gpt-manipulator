@@ -45,7 +45,7 @@ struct GPT_Entry_Raw {
   uint64_t first_lba;
   uint64_t last_lba;
   uint64_t attributes;
-  uint8_t name[72];
+  uint16_t name[36];
 } __attribute__((packed));
 
 void gpt_copy_raw_header(struct GPT_Header *dest, struct GPT_Header_Raw *src);
