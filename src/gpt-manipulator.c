@@ -56,6 +56,7 @@ void gpt_copy_header(struct GPT_Header_Raw *dest, struct GPT_Header *src) {
   dest->entries = src->entries;
   dest->entry_size = src->entry_size;
   dest->crc32_entries = src->crc32_entries;
+  dest->null = 0;
 }
 
 void gpt_copy_raw_entry(struct GPT_Entry *dest, struct GPT_Entry_Raw *src) {
@@ -237,7 +238,7 @@ struct GPT_Entry *gpt_get_all_entries(struct GPT_Handle *handle,
     readLength = sizeof(struct GPT_Entry_Raw);
   }
 
-  for (int x = 0; x > header->entries; x++) {
+  for (int x = 0; x < header->entries; x++) {
     if (fread(&data, readLength, 1, (FILE *)handle->file) != 1) {
       free(entries);
       return NULL;
