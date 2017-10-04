@@ -275,6 +275,7 @@ void gpt_refresh_crc32(struct GPT_Header *header) {
   gpt_copy_header((struct GPT_Header_Raw *)data, header);
 
   crc32(data, header->header_size, &header->crc32_header);
+  free(data);
 }
 
 void gpt_refresh_entries(struct GPT_Header *header, struct GPT_Entry *entries) {
