@@ -22,4 +22,6 @@
 
 #include <stdint.h>
 
-uint32_t crc32_generate(const void *data, unsigned long length);
+uint32_t crc32_for_byte(uint32_t r);
+
+void crc32(const void *data, unsigned long n_bytes, uint32_t* crc);

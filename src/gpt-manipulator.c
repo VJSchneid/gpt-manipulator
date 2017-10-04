@@ -250,6 +250,7 @@ struct GPT_Entry *gpt_get_all_entries(struct GPT_Handle *handle,
       return NULL;
     }
   }
+  return entries;
 }
 
 void gpt_free_entries(struct GPT_Entry *entries) {
@@ -272,13 +273,12 @@ void gpt_refresh_crc32(struct GPT_Header *header) {
 
   gpt_copy_header((struct GPT_Header_Raw *)data, header);
 
-  header->crc32_header = crc32_generate(data, header->header_size);
+  crc32(data, header->header_size, &header->crc32_header);
 }
 
-void gpt_refresh_entries(struct GPT_Header *header, struct GPT_Entry *entries,
-                        int partition_count) {
-  header->crc32_entries = crc32_generate(entries,
-                                  header->entries * header->entry_size);
+void gpt_refresh_entries(struct GPT_Header *header, struct GPT_Entry *entries) {
+  header->crc32_entries = 0;
+  crc32(entries, header->entries * header->entry_size, &header->crc32_entries);
 }
 
 enum GPT_Error gpt_write_header(struct GPT_Handle *handle,
@@ -313,7 +313,6 @@ enum GPT_Error gpt_write_entries(struct GPT_Handle *handle,
     return GPT_SEEK_ERROR;
   }
 
-  struct GPT_Entry_Raw data;
   int writeLength, padding = header->entry_size - sizeof(struct GPT_Entry_Raw);
   if (padding < 0) {
     writeLength = header->entry_size;
@@ -322,7 +321,7 @@ enum GPT_Error gpt_write_entries(struct GPT_Handle *handle,
     writeLength = sizeof(struct GPT_Entry_Raw);
   }
 
-  void *pad;
+  void *pad = NULL;
   int pad_size;
   if (padding != 0) {
     if (padding > 256) {
@@ -332,8 +331,8 @@ enum GPT_Error gpt_write_entries(struct GPT_Handle *handle,
       pad = malloc(padding);
       pad_size = padding;
     }
+    memset(pad, 0, pad_size);
   }
-  memset(pad, 0, pad_size);
 
   for (int x = 0; x < header->entries; x++) {
     if (fwrite(entries + x, writeLength, 1, (FILE*)handle->file) != 1) {
@@ -421,4 +420,6 @@ enum GPT_Error gpt_verify_header(struct GPT_Handle *handle,
   if (header->position_secondary <= header->position_primary) {
     return GPT_BAD_SECONDARY_POSITION;
   }
+
+  return GPT_SUCCESS;
 }

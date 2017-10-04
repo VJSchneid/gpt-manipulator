@@ -156,8 +156,8 @@ void gpt_refresh_crc32(struct GPT_Header *header);
  * @param header     GPT header
  * @param entries All GPT partitions
  */
-void gpt_refresh_entries(struct GPT_Header *header, struct GPT_Entry *entries,
-                        int partition_count);
+void gpt_refresh_entries(struct GPT_Header *header, struct GPT_Entry *entries);
+
 /**
  * Write GPT Header to device or image. The secondary GPT Header
  *      won't be wirtten to disk.
