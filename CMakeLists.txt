@@ -14,7 +14,7 @@ set(SOURCE_FILES
   src/crc32.c
 )
 
-add_library(gpt-manipulator ${SOURCE_FILES})
+add_library(gpt-manipulator STATIC ${SOURCE_FILES})
 
 install(TARGETS gpt-manipulator DESTINATION lib)
 install(FILES src/gpt-manipulator.h DESTINATION include)
